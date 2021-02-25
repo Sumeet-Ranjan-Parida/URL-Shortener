@@ -1,0 +1,3 @@
+create database urlshorten;
+
+create table urls(id varchar(50) primary key not null unique, shorturl varchar(50) not null, longurl varchar(120) not null unique);
