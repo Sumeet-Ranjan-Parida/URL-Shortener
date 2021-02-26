@@ -42,7 +42,8 @@ func handleRequests() {
 func main() {
 	fmt.Println("Server Started...")
 
+	db := dbConnect()
+
 	handleRequests()
 
-	db := dbConnect()
 }
