@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -32,10 +33,14 @@ func getUrls(w http.ResponseWriter, r *http.Request) {
 	urls = append(urls, Url{ID: e, Shorturl: "localhost:8080/" + e, Longurl: "long"})
 }
 
-func main() {
+func handleRequests() {
 	r := mux.NewRouter()
-
-	r.HandleFunc("/api/urls", getUrls).Methods("GET")
-
+	r.HandleFunc("/urls", getUrls).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", r))
+}
+
+func main() {
+	fmt.Println("Server Started...")
+
+	handleRequests()
 }
