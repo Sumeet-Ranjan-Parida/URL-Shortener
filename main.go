@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
+	"unicode"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -26,6 +28,7 @@ func health(w http.ResponseWriter, r *http.Request) {
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
+
 	var url Url
 	_ = json.NewDecoder(r.Body).Decode(&url)
 
@@ -50,6 +53,8 @@ func create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	insert.Exec(ID, shorturl, longurl)
+
+	json.NewEncoder(w).Encode(shorturl)
 }
 
 func rootendpoint(w http.ResponseWriter, r *http.Request) {
@@ -72,8 +77,21 @@ func rootendpoint(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		bigurl := "http://" + url.Longurl
-		http.Redirect(w, r, bigurl, 301)
+
+		x := func(c rune) bool {
+			return !unicode.IsLetter(c)
+		}
+		strArray := strings.FieldsFunc(url.Longurl, x)
+
+		if strArray[0] == "https" {
+			bigurl := url.Longurl
+			http.Redirect(w, r, bigurl, 301)
+
+		} else {
+			bigurl := "https://" + url.Longurl
+			http.Redirect(w, r, bigurl, 301)
+
+		}
 	}
 
 }
@@ -81,7 +99,7 @@ func rootendpoint(w http.ResponseWriter, r *http.Request) {
 func handleRequests() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", health)
-	r.HandleFunc("/create", create).Methods("POST")
+	r.HandleFunc("/create", create)
 	r.HandleFunc("/{id}", rootendpoint).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
